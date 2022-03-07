@@ -1,2 +1,4 @@
 1. Handwriting_Recognition_Based_on_Resnet-18.pdf
 3. 2111.11616.pdf 
+
+https://github.com/kuangliu/pytorch-cifar
