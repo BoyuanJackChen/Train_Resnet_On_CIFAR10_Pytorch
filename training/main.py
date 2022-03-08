@@ -31,7 +31,6 @@ def train(model, device, train_loader, optimizer, epoch):
     train_loss = train_loss / len(train_loader)
     print("avg train loss for current epoch", train_loss)
     return train_loss
-            
 
 
 def test(model, device, test_loader):
@@ -39,14 +38,15 @@ def test(model, device, test_loader):
     test_loss = 0
     correct = 0
     criterion = nn.CrossEntropyLoss()
-    
+
     with torch.no_grad():
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
             output = model(data)
             loss = criterion(output, target)
             test_loss += criterion(output, target).item()
-            pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+            # get the index of the max log-probability
+            pred = output.argmax(dim=1, keepdim=True)
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader.dataset)
@@ -57,7 +57,6 @@ def test(model, device, test_loader):
     return test_loss
 
 
-
 use_cuda = torch.cuda.is_available()
 
 torch.manual_seed(42)
@@ -66,7 +65,7 @@ device = torch.device("cuda" if use_cuda else "cpu")
 
 train_kwargs = {'batch_size': 64}
 test_kwargs = {'batch_size': 100}
-epochs=1
+epochs = 1
 PATH = "checkpoints/saved_model.pt"
 
 
@@ -77,14 +76,25 @@ if use_cuda:
     train_kwargs.update(cuda_kwargs)
     test_kwargs.update(cuda_kwargs)
 
-transform=transforms.Compose([
-    transforms.ToTensor()
-    ])
+
+# used data transforms from https://github.com/kuangliu/pytorch-cifar/blob/master/main.py
+transform_train = transforms.Compose([
+    transforms.RandomCrop(32, padding=4),
+    transforms.RandomHorizontalFlip(),
+    transforms.ToTensor(),
+    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+])
+
+transform_test = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+])
+
 dataset1 = datasets.CIFAR10('../data', train=True, download=True,
-                   transform=transform)
+                            transform=transform_train)
 dataset2 = datasets.CIFAR10('../data', train=False,
-                   transform=transform)
-train_loader = torch.utils.data.DataLoader(dataset1,**train_kwargs)
+                            transform=transform_test)
+train_loader = torch.utils.data.DataLoader(dataset1, **train_kwargs)
 test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
 model = project1_model().to(device)
@@ -98,5 +108,5 @@ for epoch in range(1, epochs + 1):
     test_loss_list.append(test_loss)
     train_loss_list.append(train_loss)
 
-    
+
 torch.save(model.state_dict(), PATH)
