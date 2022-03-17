@@ -49,14 +49,13 @@ def train(model, device, train_loader, optimizer, epoch, alpha, mixup=True):
     train_loss = train_loss / len(train_loader)
     print("avg train loss for current epoch", train_loss)
     return train_loss
-            
 
 def test(model, device, test_loader):
     model.eval()
     test_loss = 0
     correct = 0
     criterion = nn.CrossEntropyLoss()
-    
+
     with torch.no_grad():
         for data, target in test_loader:
             # No need for mixup in test set
@@ -64,7 +63,8 @@ def test(model, device, test_loader):
             output = model(data)
             loss = criterion(output, target)
             test_loss += criterion(output, target).item()
-            pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+            # get the index of the max log-probability
+            pred = output.argmax(dim=1, keepdim=True)
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader)
@@ -105,6 +105,7 @@ def main(args):
 
     # Normalization parameters from https://github.com/kuangliu/pytorch-cifar/issues/19
     transform_train = transforms.Compose([
+        # transforms.RandomCrop(32, padding=4),
         # transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261)),
