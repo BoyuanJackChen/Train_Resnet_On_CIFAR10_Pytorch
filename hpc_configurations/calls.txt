@@ -1,0 +1,36 @@
+ssh bc3194@gw.hpc.nyu.edu  (only if you are not under NYU network or vpn)
+ssh bc3194@greene.hpc.nyu.edu
+
+module avail
+module purge
+module load anaconda3/2020.07
+
+conda activate ./penv
+
+conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
+
+
+
+#!/bin/bash 
+SBATCH --nodes=3                        # requests 3 compute servers
+SBATCH --ntasks-per-node=2              # runs 2 tasks on each server
+SBATCH --cpus-per-task=1                # uses 1 compute core per task
+SBATCH --time=1:00:00
+SBATCH --mem=10GB
+SBATCH --job-name=python-hello-world
+SBATCH --output=python-hello-world.out
+
+#module purge
+#module load anaconda3/2020.07
+#conda activate ./penv
+
+conda install numpy
+conda install matplotlib
+conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
+# uncomment the following line if you have requirements.txt file
+# conda install -r requirements.txt
+
+python ./hello-world.py
+
+# unload module
+module unload anaconda3/2020.07
