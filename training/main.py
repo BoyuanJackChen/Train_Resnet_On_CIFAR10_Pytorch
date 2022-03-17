@@ -13,7 +13,7 @@ from torch.optim.lr_scheduler import StepLR
 
 from preprocessing import mixup_data, mixup_criterion
 from project1_model import project1_model
-from utils import format_time
+from utils import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--epochs', type=int, default=5)
@@ -124,6 +124,7 @@ def main(args):
     model = project1_model().to(device)
     # optimizer = optim.SGD(model.parameters(), lr=args.lr)
     optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=[0.9, 0.999])
+    print(f"Model has {count_parameters(model)} parameters")
 
     # Training
     test_loss_list = []
