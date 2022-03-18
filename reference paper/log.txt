@@ -2,3 +2,5 @@
 3. 2111.11616.pdf 
 
 https://github.com/kuangliu/pytorch-cifar
+
+https://pytorch.org/tutorials/beginner/hyperparameter_tuning_tutorial.html
