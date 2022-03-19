@@ -1,7 +1,5 @@
-checkpoints
+
 data
-
-
-
+**__pycache__
+**.ipynb_checkpoints
 **.idea
-data/cifar-10-python/*
