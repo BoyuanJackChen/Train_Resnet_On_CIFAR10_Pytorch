@@ -66,7 +66,7 @@ device = torch.device("cuda" if use_cuda else "cpu")
 
 train_kwargs = {'batch_size': 64}
 test_kwargs = {'batch_size': 100}
-epochs=1
+epochs=100
 PATH = "checkpoints/saved_model.pt"
 
 
