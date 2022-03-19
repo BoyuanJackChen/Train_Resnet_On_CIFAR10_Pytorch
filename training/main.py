@@ -74,7 +74,6 @@ def test(model, device, test_loader):
     return test_loss
 
 
-<<<<<<< HEAD
 
 use_cuda = torch.cuda.is_available()
 
@@ -118,7 +117,7 @@ for epoch in range(1, epochs + 1):
 
     
 torch.save(model.state_dict(), PATH)
-=======
+
 def plot_losses(train_loss_list, test_loss_list):
     plt.plot(range(len(train_loss_list)),train_loss_list,'-',linewidth=3,label='Train error')
     plt.plot(range(len(test_loss_list)), test_loss_list, '-',linewidth=3,label='Test error')
@@ -190,4 +189,3 @@ def main(args):
 
 if __name__ == '__main__':
     main(FLAGS)
->>>>>>> 34d383bbf1004872bb151a2dfeda0bb3a6587026
