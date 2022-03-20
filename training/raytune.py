@@ -78,7 +78,7 @@ def train_cifar(config, checkpoint_dir=None):
 def tune_main(num_samples=3, max_num_epochs=4, gpus_per_trial=2):
     config = {
         "lr": tune.loguniform(1e-4, 1e-1),
-        "betas": [tune.loguniform(0.1, 0.999), tune.loguniform(0.1, 0.999)]
+        "betas": [tune.loguniform(0.9, 0.999), tune.loguniform(0.9, 0.999)]
     }
     scheduler = ASHAScheduler(
         metric="loss",
