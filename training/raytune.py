@@ -1,15 +1,7 @@
-# reference from https://python.iitter.com/other/145646.html
+# Reference from https://python.iitter.com/other/145646.html
 from functools import partial
-import numpy as np
 import os
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
 from torch.utils.data import random_split
-import torchvision
-import torchvision.transforms as transforms
-import torchvision.datasets as datasets
 
 from ray import tune
 from ray.tune import CLIReporter
@@ -18,9 +10,7 @@ from main import *
 
 
 def train_cifar(config, checkpoint_dir=None):
-
     args = FLAGS
-
     # ---------------------------------- main func in main.py ----------------------------------
     criterion = nn.CrossEntropyLoss()
     use_cuda = torch.cuda.is_available()
@@ -40,7 +30,6 @@ def train_cifar(config, checkpoint_dir=None):
 
     # Normalization parameters from https://github.com/kuangliu/pytorch-cifar/issues/19
     transform_train = transforms.Compose([
-        # transforms.RandomCrop(32, padding=4),
         # transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261)),

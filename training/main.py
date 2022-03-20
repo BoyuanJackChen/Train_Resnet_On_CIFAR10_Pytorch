@@ -1,12 +1,13 @@
-# Reference: We modify the train/test framework from https://github.com/pytorch/examples/blob/master/mnist/main.py
+# Reference: We modified the train/test framework from
+# https://github.com/pytorch/examples/blob/master/mnist/main.py
 
 from __future__ import print_function
 import argparse
 import matplotlib.pyplot as plt
 import time
+import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
@@ -17,8 +18,9 @@ from wide_resnet import Wide_ResNet
 from utils import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--epochs', type=int, default=100)
-parser.add_argument('--lr', type=float, default=1e-4)
+parser.add_argument('--epochs', type=int, default=200)
+parser.add_argument('--checkpoint', type=int, default=20)
+parser.add_argument('--lr', type=float, default=1e-5)
 parser.add_argument('--train_batch', type=int, default=64, help="batch size for training dataset")
 parser.add_argument('--test_batch', type=int, default=64)
 parser.add_argument('--alpha', type=float, default=0.2)   # For beta distribution in mixup augmentation
@@ -69,10 +71,9 @@ def test(model, device, test_loader):
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader)
-    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        test_loss, correct, len(test_loader.dataset),
-        100. * correct / len(test_loader.dataset)))
-    return test_loss
+    accuracy = correct/len(test_loader.dataset)
+    print(f"\n Test set: Average loss: {test_loss}, Accuracy: {accuracy}")
+    return test_loss, accuracy
 
 def plot_losses(train_loss_list, test_loss_list):
     plt.plot(range(len(train_loss_list)),train_loss_list,'-',linewidth=3,label='Train error')
@@ -89,12 +90,12 @@ def main(args):
     # Use gpu if available
     use_cuda = torch.cuda.is_available()
     torch.manual_seed(42)
-    device = torch.device("cuda:1" if use_cuda else "cpu")
+    device = torch.device("cuda" if use_cuda else "cpu")
     print(f"Running on device: {torch.cuda.get_device_name(0)}")
     # Parameters
     train_kwargs = {'batch_size': args.train_batch}
     test_kwargs = {'batch_size': args.test_batch}
-    PATH = "../checkpoints/saved_model.pt"
+    PATH = "../checkpoints/run_1"
 
     if use_cuda:
         cuda_kwargs = {'num_workers': 1,
@@ -105,7 +106,6 @@ def main(args):
 
     # Normalization parameters from https://github.com/kuangliu/pytorch-cifar/issues/19
     transform_train = transforms.Compose([
-        # transforms.RandomCrop(32, padding=4),
         # transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261)),
@@ -117,33 +117,39 @@ def main(args):
     dataset1 = datasets.CIFAR10('../data', train=True, download=True,
                                 transform=transform_train)  # 50k
     dataset2 = datasets.CIFAR10('../data', train=False,
-                                transform=transform_test)  # 10k
+                                transform=transform_test)   # 10k
     train_loader = torch.utils.data.DataLoader(dataset1, **train_kwargs)
     test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
-    #efficientnet = torch.hub.load('NVIDIA/DeepLearningExamples:torchhub', 'nvidia_efficientnet_b0', pretrained=True)
-    #model = efficientnet.to(device)
+    # efficientnet = torch.hub.load('NVIDIA/DeepLearningExamples:torchhub', 'nvidia_efficientnet_b0', pretrained=True)
+    # model = efficientnet.to(device)
+    # model = Wide_ResNet(28, 2, 0.3, 10).to(device)
     model = project1_model().to(device)
-    #model = Wide_ResNet(28, 2, 0.3, 10).to(device)
     # optimizer = optim.SGD(model.parameters(), lr=args.lr)
     optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=[0.9, 0.999])
     print(f"Model has {count_parameters(model)} parameters")
 
     # Training
-    test_loss_list = []
-    train_loss_list = []
+    test_loss_list = np.array([])
+    train_loss_list = np.array([])
+    accuracy_list = np.array([])
     start = time.time()
     for epoch in range(1, args.epochs + 1):
         train_loss = train(model, device, train_loader, optimizer, epoch, args.alpha)
-        test_loss = test(model, device, test_loader)
-        test_loss_list.append(test_loss)
-        train_loss_list.append(train_loss)
+        test_loss, accuracy = test(model, device, test_loader)
+        test_loss_list = np.append(test_loss_list, test_loss)
+        train_loss_list = np.append(train_loss_list, train_loss)
+        accuracy_list = np.append(accuracy_list, accuracy)
+        if epoch % args.checkpoint == 0:
+            torch.save(model.state_dict(), PATH + f"/model_epoch{epoch}.pt")
     duration = time.time()-start
     print(f"Training done. Took {format_time(duration)}")
 
-    # TODO: save and load loss files
-    torch.save(model.state_dict(), PATH)
+    loss_list = np.concatenate((np.array([train_loss_list]),np.array([test_loss_list])), axis=0)
+    loss_list = np.concatenate((loss_list, np.array([accuracy_list])), axis=0)
+    np.save(PATH+f"/loss_e{args.epochs}", loss_list)
     plot_losses(train_loss_list, test_loss_list)
+    print(f"Model, accuracy and loss history saved to {PATH}")
 
 
 if __name__ == '__main__':
