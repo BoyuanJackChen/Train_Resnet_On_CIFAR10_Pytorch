@@ -53,8 +53,9 @@ def train_cifar(config, checkpoint_dir=None):
 
     # tuning
     for epoch in range(300):
-        running_loss = 0.0
+        train_loss = 0.0
         epoch_steps = 0
+        correct = 0
         for i, (data, target) in enumerate(train_loader):
             data, target = data.to(device), target.to(device)
             optimizer.zero_grad()
@@ -62,16 +63,16 @@ def train_cifar(config, checkpoint_dir=None):
             loss = criterion(outputs, target)
             loss.backward()
             optimizer.step()
-            running_loss += loss.item()
-            epoch_steps += 1
-            if i % 2000 == 1999:
-                print("[%d, %5d] loss: %.3f" % (epoch + 1, i + 1,
-                                                running_loss / epoch_steps))
-                running_loss = 0.0
+            train_loss += loss.item()
+            pred = output.argmax(dim=1, keepdim=True)
+            correct += pred.eq(target.view_as(pred)).sum().item()
+
         with tune.checkpoint_dir(epoch) as checkpoint_dir:
             path = os.path.join(checkpoint_dir, "checkpoint")
             torch.save((model.state_dict(), optimizer.state_dict()), path)
-        tune.report(loss=0, accuracy=1)
+        train_loss = train_loss / len(train_loader)
+        accuracy = correct/len(train_loss.dataset)
+        tune.report(loss=train_loss, accuracy=accuracy)
     print("Finished Training")
 
 
