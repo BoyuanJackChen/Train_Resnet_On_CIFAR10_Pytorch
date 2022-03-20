@@ -49,10 +49,10 @@ def train_cifar(config, checkpoint_dir=None):
 
     # ------------------------------------------------------------------------------------------------------
     optimizer = optim.Adam(
-        model.parameters(), lr=config["lr"], betas=config["betas"])
+        model.parameters(), lr=config["lr"], betas=[0.9, 0.999])
 
     # tuning
-    for epoch in range(4):
+    for epoch in range(300):
         running_loss = 0.0
         epoch_steps = 0
         for i, (data, target) in enumerate(train_loader):
@@ -77,8 +77,7 @@ def train_cifar(config, checkpoint_dir=None):
 
 def tune_main(num_samples=3, max_num_epochs=4, gpus_per_trial=2):
     config = {
-        "lr": tune.loguniform(1e-4, 1e-1),
-        "betas": [tune.loguniform(0.9, 0.999), tune.loguniform(0.9, 0.999)]
+        "lr": tune.choice([5e-5, 1e-4, 2.5e-4, 5e-4])
     }
     scheduler = ASHAScheduler(
         metric="loss",
@@ -104,4 +103,4 @@ def tune_main(num_samples=3, max_num_epochs=4, gpus_per_trial=2):
 
 
 if __name__ == "__main__":
-    tune_main(num_samples=3, max_num_epochs=4, gpus_per_trial=0)
+    tune_main(num_samples=3, max_num_epochs=300, gpus_per_trial=0)
