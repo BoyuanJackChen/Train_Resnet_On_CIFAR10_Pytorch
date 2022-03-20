@@ -13,10 +13,11 @@ from torch.optim.lr_scheduler import StepLR
 
 from preprocessing import mixup_data, mixup_criterion
 from project1_model import project1_model
+from wide_resnet import Wide_ResNet
 from utils import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--epochs', type=int, default=5)
+parser.add_argument('--epochs', type=int, default=100)
 parser.add_argument('--lr', type=float, default=1e-4)
 parser.add_argument('--train_batch', type=int, default=64, help="batch size for training dataset")
 parser.add_argument('--test_batch', type=int, default=64)
@@ -73,51 +74,6 @@ def test(model, device, test_loader):
         100. * correct / len(test_loader.dataset)))
     return test_loss
 
-
-
-use_cuda = torch.cuda.is_available()
-
-torch.manual_seed(42)
-
-device = torch.device("cuda" if use_cuda else "cpu")
-
-train_kwargs = {'batch_size': 64}
-test_kwargs = {'batch_size': 100}
-epochs=100
-PATH = "checkpoints/saved_model.pt"
-
-
-if use_cuda:
-    cuda_kwargs = {'num_workers': 1,
-                   'pin_memory': True,
-                   'shuffle': True}
-    train_kwargs.update(cuda_kwargs)
-    test_kwargs.update(cuda_kwargs)
-
-transform=transforms.Compose([
-    transforms.ToTensor()
-    ])
-dataset1 = datasets.CIFAR10('../data', train=True, download=True,
-                   transform=transform)
-dataset2 = datasets.CIFAR10('../data', train=False,
-                   transform=transform)
-train_loader = torch.utils.data.DataLoader(dataset1,**train_kwargs)
-test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
-
-model = project1_model().to(device)
-optimizer = optim.SGD(model.parameters(), lr=0.01)
-
-test_loss_list = []
-train_loss_list = []
-for epoch in range(1, epochs + 1):
-    train_loss = train(model, device, train_loader, optimizer, epoch)
-    test_loss = test(model, device, test_loader)
-    test_loss_list.append(test_loss)
-    train_loss_list.append(train_loss)
-
-    
-torch.save(model.state_dict(), PATH)
-
 def plot_losses(train_loss_list, test_loss_list):
     plt.plot(range(len(train_loss_list)),train_loss_list,'-',linewidth=3,label='Train error')
     plt.plot(range(len(test_loss_list)), test_loss_list, '-',linewidth=3,label='Test error')
@@ -133,7 +89,7 @@ def main(args):
     # Use gpu if available
     use_cuda = torch.cuda.is_available()
     torch.manual_seed(42)
-    device = torch.device("cuda" if use_cuda else "cpu")
+    device = torch.device("cuda:1" if use_cuda else "cpu")
     print(f"Running on device: {torch.cuda.get_device_name(0)}")
     # Parameters
     train_kwargs = {'batch_size': args.train_batch}
@@ -165,7 +121,10 @@ def main(args):
     train_loader = torch.utils.data.DataLoader(dataset1, **train_kwargs)
     test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
+    #efficientnet = torch.hub.load('NVIDIA/DeepLearningExamples:torchhub', 'nvidia_efficientnet_b0', pretrained=True)
+    #model = efficientnet.to(device)
     model = project1_model().to(device)
+    #model = Wide_ResNet(28, 2, 0.3, 10).to(device)
     # optimizer = optim.SGD(model.parameters(), lr=args.lr)
     optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=[0.9, 0.999])
     print(f"Model has {count_parameters(model)} parameters")
