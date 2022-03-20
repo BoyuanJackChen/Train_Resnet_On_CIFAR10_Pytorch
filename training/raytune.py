@@ -64,14 +64,14 @@ def train_cifar(config, checkpoint_dir=None):
             loss.backward()
             optimizer.step()
             train_loss += loss.item()
-            pred = output.argmax(dim=1, keepdim=True)
+            pred = outputs.argmax(dim=1, keepdim=True)
             correct += pred.eq(target.view_as(pred)).sum().item()
 
         with tune.checkpoint_dir(epoch) as checkpoint_dir:
             path = os.path.join(checkpoint_dir, "checkpoint")
             torch.save((model.state_dict(), optimizer.state_dict()), path)
         train_loss = train_loss / len(train_loader)
-        accuracy = correct/len(train_loss.dataset)
+        accuracy = correct/len(train_loader.dataset)
         tune.report(loss=train_loss, accuracy=accuracy)
     print("Finished Training")
 
