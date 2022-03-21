@@ -1,4 +1,3 @@
-# Reference from https://python.iitter.com/other/145646.html
 from functools import partial
 import os
 from torch.utils.data import random_split
