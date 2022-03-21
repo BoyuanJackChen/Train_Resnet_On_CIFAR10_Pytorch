@@ -3,9 +3,7 @@
 
 from __future__ import print_function
 import argparse
-import matplotlib.pyplot as plt
 import time
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -21,7 +19,8 @@ from utils import *
 parser = argparse.ArgumentParser()
 parser.add_argument('--epochs', type=int, default=300)
 parser.add_argument('--checkpoint', type=int, default=20)
-parser.add_argument('--lr', type=float, default=1e-4)
+parser.add_argument('--load_checkpoint', type=str, default="../checkpoints/Mixup/lr5e-4/e140_b64_lr0.0005.pt")
+parser.add_argument('--lr', type=float, default=5e-4)
 parser.add_argument('--train_batch', type=int, default=64, help="batch size for training dataset")
 parser.add_argument('--test_batch', type=int, default=64)
 parser.add_argument('--alpha', type=float, default=0.2)   # For beta distribution in mixup augmentation
@@ -76,16 +75,6 @@ def test(model, device, test_loader):
     print(f"Test set average loss: {test_loss}, Accuracy: {accuracy} \n")
     return test_loss, accuracy
 
-def plot_losses(train_loss_list, test_loss_list):
-    plt.plot(range(len(train_loss_list)),train_loss_list,'-',linewidth=3,label='Train error')
-    plt.plot(range(len(test_loss_list)), test_loss_list, '-',linewidth=3,label='Test error')
-    plt.xlabel('epoch')
-    plt.ylabel('loss')
-    plt.grid(True)
-    plt.legend()
-    plt.show()
-    return
-
 
 def main(args):
     # Use gpu if available
@@ -96,7 +85,7 @@ def main(args):
     # Parameters
     train_kwargs = {'batch_size': args.train_batch}
     test_kwargs = {'batch_size': args.test_batch}
-    PATH = "../checkpoints/Mixup/run_3"
+    PATH = "../checkpoints/Mixup/run_5"
     if not os.path.exists(PATH):
         os.makedirs(PATH)
 
@@ -132,12 +121,27 @@ def main(args):
     optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=[0.9, 0.999])
     print(f"Model has {count_parameters(model)} parameters")
 
-    # Training
-    test_loss_list = np.array([])
+    # Initialize loss list
     train_loss_list = np.array([])
+    test_loss_list = np.array([])
     accuracy_list = np.array([])
     start = time.time()
-    for epoch in range(1, args.epochs + 1):
+    start_epoch = 1
+
+    # Load Checkpoint
+    if args.load_checkpoint is not None:
+        checkpoint = torch.load(args.load_checkpoint)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        loss = checkpoint['loss']
+        train_loss_list = loss[0]
+        test_loss_list = loss[1]
+        accuracy_list = loss[2]
+        start_epoch = checkpoint['epoch']+1
+
+    # Training
+    for epoch in range(start_epoch, args.epochs + 1):
+        print(f"starting epoch {epoch}")
         train_loss = train(model, device, train_loader, optimizer, epoch, args.alpha, mixup=True)
         test_loss, accuracy = test(model, device, test_loader)
         test_loss_list = np.append(test_loss_list, test_loss)
@@ -155,7 +159,7 @@ def main(args):
             print(f"Checkpoint saved at epoch {epoch}")
     duration = time.time()-start
     print(f"Training done. Took {format_time(duration)}")
-    plot_losses(train_loss_list, test_loss_list)
+    # plot_losses(train_loss_list, test_loss_list)
     print(f"Model, accuracy and loss history saved to {PATH}")
 
 
