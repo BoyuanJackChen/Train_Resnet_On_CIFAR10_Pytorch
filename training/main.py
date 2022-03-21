@@ -64,7 +64,6 @@ def test(model, device, test_loader):
             # No need for mixup in test set
             data, target = data.to(device), target.to(device)
             output = model(data)
-            loss = criterion(output, target)
             test_loss += criterion(output, target).item()
             # get the index of the max log-probability
             pred = output.argmax(dim=1, keepdim=True)
