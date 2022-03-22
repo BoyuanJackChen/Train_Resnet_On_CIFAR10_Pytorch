@@ -1,5 +1,10 @@
-# Reference: We modified the train/test framework from
+"""
+The main model training file. To run it, simply modify the hyperparameters in the argsparser and
+call "python3 main.py"
+
+We modified the train/test framework from
 # https://github.com/pytorch/examples/blob/master/mnist/main.py
+"""
 
 from __future__ import print_function
 import argparse
@@ -9,11 +14,9 @@ import torch.nn as nn
 import torch.optim as optim
 from torchvision import datasets, transforms
 import os
-from torch.optim.lr_scheduler import StepLR
 
 from preprocessing import mixup_data, mixup_criterion
 from project1_model import project1_model
-from wide_resnet import Wide_ResNet
 from utils import *
 
 parser = argparse.ArgumentParser()
@@ -112,11 +115,7 @@ def main(args):
     train_loader = torch.utils.data.DataLoader(dataset1, **train_kwargs)
     test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
-    # efficientnet = torch.hub.load('NVIDIA/DeepLearningExamples:torchhub', 'nvidia_efficientnet_b0', pretrained=True)
-    # model = efficientnet.to(device)
-    # model = Wide_ResNet(28, 2, 0.3, 10).to(device)
     model = project1_model().to(device)
-    # optimizer = optim.SGD(model.parameters(), lr=args.lr)
     optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=[0.9, 0.999])
     print(f"Model has {count_parameters(model)} parameters")
 
@@ -158,7 +157,7 @@ def main(args):
             print(f"Checkpoint saved at epoch {epoch}")
     duration = time.time()-start
     print(f"Training done. Took {format_time(duration)}")
-    # plot_losses(train_loss_list, test_loss_list)
+    plot_losses(train_loss_list, test_loss_list)
     print(f"Model, accuracy and loss history saved to {PATH}")
 
 
