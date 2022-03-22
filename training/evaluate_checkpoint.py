@@ -8,7 +8,7 @@ from project1_model import project1_model
 from utils import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--load_checkpoint', type=str, default="../checkpoints/lr1e-3/e300_b64_lr0.001.pt")
+parser.add_argument('--load_checkpoint', type=str, default="checkpoints/lr1e-3/e300_b64_lr0.001.pt")
 FLAGS = parser.parse_args()
 
 def test(model, device, test_loader):
@@ -71,7 +71,6 @@ def main(args):
     accuracy_list = loss[2]
 
     test_loss, accuracy = test(model, device, test_loader)
-    print(f"Test set accuracy is: {np.amax(accuracy_list)}%")
     plot_losses(train_loss_list, test_loss_list)
 
 
