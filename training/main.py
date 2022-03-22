@@ -19,8 +19,8 @@ from utils import *
 parser = argparse.ArgumentParser()
 parser.add_argument('--epochs', type=int, default=300)
 parser.add_argument('--checkpoint', type=int, default=20)
-parser.add_argument('--load_checkpoint', type=str, default="../checkpoints/Mixup/lr5e-4/e140_b64_lr0.0005.pt")
-parser.add_argument('--lr', type=float, default=5e-4)
+parser.add_argument('--load_checkpoint', type=str, default=None)
+parser.add_argument('--lr', type=float, default=2.5e-4)
 parser.add_argument('--train_batch', type=int, default=64, help="batch size for training dataset")
 parser.add_argument('--test_batch', type=int, default=64)
 parser.add_argument('--alpha', type=float, default=0.2)   # For beta distribution in mixup augmentation
@@ -84,7 +84,7 @@ def main(args):
     # Parameters
     train_kwargs = {'batch_size': args.train_batch}
     test_kwargs = {'batch_size': args.test_batch}
-    PATH = "../checkpoints/Mixup/run_5"
+    PATH = "../checkpoints/Mixup/lr2.5e-4"
     if not os.path.exists(PATH):
         os.makedirs(PATH)
 

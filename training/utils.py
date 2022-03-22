@@ -60,6 +60,7 @@ def analyze_checkpoint(path):
     accuracy_list = loss[2]
     print(np.amax(accuracy_list))
 
+
 if __name__=='__main__':
-    path = "../checkpoints/Mixup/lr1e-4_b64_mixup/e300_b64_lr0.0001.pt"
+    path = "../checkpoints/Mixup/lr1e-3/e300_b64_lr0.001.pt"
     analyze_checkpoint(path)
