@@ -58,13 +58,13 @@ def main(args):
                                 transform=transform_test)   # 10k
     test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
-    # Load checkpoint
-    checkpoint = torch.load(args.load_checkpoint)
+    # Initialize model
     model = project1_model().to(device)
     print(f"Model has {count_parameters(model)} parameters")
-    optimizer = optim.Adam(model.parameters(), lr=5e-4, betas=[0.9, 0.999])
+
+    # Load checkpoint
+    checkpoint = torch.load(args.load_checkpoint)
     model.load_state_dict(checkpoint['model_state_dict'])
-    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     loss = checkpoint['loss']
     train_loss_list = loss[0]
     test_loss_list = loss[1]
