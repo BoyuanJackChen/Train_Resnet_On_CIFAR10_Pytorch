@@ -1,5 +1,6 @@
-# MiniProject1_G26
+# Training CIFAR-10 with ResNet using Pytorch
 
+This is the first group project of ECE7123 Deep Learning I took at NYU Tandon in Spring 2022.
 
 ## MiniProject1_G26
 Download the CIFAR-10 data from here: http://www.cs.toronto.edu/~kriz/cifar.html
